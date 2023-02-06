@@ -1,11 +1,19 @@
 version: '3'
 
 services:
-  webserver:
+  webserver_setup:
     image: nginx:latest
     ports:
       - 80:80
       - 443:443
+    volumes:
+      - ./nginx/setup_conf/:/etc/nginx/conf.d/:ro
+      - ./certbot/www:/var/www/certbot/:ro
+      - ./certbot/conf/:/etc/nginx/ssl/:ro
+
+  webserver_deployment:
+    image: nginx:latest
+    network_mode: "host"
     restart: always
     volumes:
       - ./nginx/conf/:/etc/nginx/conf.d/:ro
@@ -13,8 +21,15 @@ services:
       - ./certbot/conf/:/etc/nginx/ssl/:ro
     command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
 
-  certbot:
+  certbot_setup:
     image: certbot/certbot:latest
+    volumes:
+      - ./certbot/www/:/var/www/certbot/:rw
+      - ./certbot/conf/:/etc/letsencrypt/:rw
+
+  certbot_deployment:
+    image: certbot/certbot:latest
+    restart: always
     volumes:
       - ./certbot/www/:/var/www/certbot/:rw
       - ./certbot/conf/:/etc/letsencrypt/:rw
