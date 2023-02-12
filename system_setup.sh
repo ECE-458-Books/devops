@@ -69,7 +69,7 @@ Help()
    # Display Help
    echo "Script to add Setup System for Django/Jenkins/PostgreSQL"
    echo
-   echo "Syntax: ./system_setup.sh [-h] [-t [django|jenkins|postgres]"
+   echo "Syntax: ./system_setup.sh [-h] [-t django|jenkins|postgres]"
    echo "options:"
    echo "h     Print this Help."
    echo "t     Select type of system setup [django|jenkins|postgres]"
