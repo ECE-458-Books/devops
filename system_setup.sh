@@ -87,10 +87,10 @@ while getopts ":ht:" option; do
       t) # Enter Users
         userargs=${OPTARG}
         if [ $userargs == "django" ]; then
-            Setup
+            Setup;
             Django
         elif [ $userargs == "jenkins" ]; then
-            Setup
+            Setup;
             Jenkins
         elif [ $userargs == "postgres" ]; then
             echo "${userargs} system setup not supported yet"
