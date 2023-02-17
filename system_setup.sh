@@ -64,15 +64,23 @@ Jenkins(){
     docker compose up -d certbot_deployment
 }
 
+Database(){
+    # Go to conf files
+    cd $BASEDIR/nginx-https/nginx/conf
+    envsubst '${SERVER_NAME}' < ./database.conf.template > ./default.conf
+    sudo docker compose up -d dbserver_deployment
+    docker compose up -d certbot_deployment
+}
+
 Help()
 {
    # Display Help
-   echo "Script to add Setup System for Django/Jenkins/PostgreSQL"
+   echo "Script to add Setup System for Django/Jenkins/Database"
    echo
-   echo "Syntax: ./system_setup.sh [-h] [-t django|jenkins|postgres]"
+   echo "Syntax: ./system_setup.sh [-h] [-t django|jenkins|database]"
    echo "options:"
    echo "h     Print this Help."
-   echo "t     Select type of system setup [django|jenkins|postgres]"
+   echo "t     Select type of system setup [django|jenkins|database]"
    echo
 }
 
@@ -92,8 +100,9 @@ while getopts ":ht:" option; do
         elif [ $userargs == "jenkins" ]; then
             Setup;
             Jenkins
-        elif [ $userargs == "postgres" ]; then
-            echo "${userargs} system setup not supported yet"
+        elif [ $userargs == "database" ]; then
+            Setup;
+            Database
         else
             Help
         fi
