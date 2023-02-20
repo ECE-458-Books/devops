@@ -23,10 +23,10 @@ pipeline {
                     sh 'scp -r crs79@books-db.colab.duke.edu:/srv/media/books/* /../../var/lib/jenkins/db-dumps/${directory}/$(date +%F)/books'
                     
                     sh 'echo "Remove old files"'
-                    sh 'find /../../var/lib/jenkins/db-dumps/hourly -mtime +1 -type f -delete'
-                    sh 'find /../../var/lib/jenkins/db-dumps/daily -mtime +7 -type f -delete'
-                    sh 'find /../../var/lib/jenkins/db-dumps/weekly -mtime +30 -type f -delete'
-                    sh 'find /../../var/lib/jenkins/db-dumps/monthly -mtime +366 -type f -delete'
+                    sh 'find /../../var/lib/jenkins/db-dumps/hourly/* -type d -mtime +1 | xargs rm -rf'
+                    sh 'find /../../var/lib/jenkins/db-dumps/daily/* -type d -mtime +7 | xargs rm -rf'
+                    sh 'find /../../var/lib/jenkins/db-dumps/weekly/* -type d -mtime +30 | xargs rm -rf'
+                    sh 'find /../../var/lib/jenkins/db-dumps/monthly/* -type d -mtime +366 | xargs rm -rf'
                 }
             }
         }
