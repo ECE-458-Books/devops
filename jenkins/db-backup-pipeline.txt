@@ -1,0 +1,33 @@
+pipeline {
+    agent any
+    stages {
+        stage('Backup database') {
+            steps {
+                sshagent(['books-db-key']) {
+                    sh 'ssh -o StrictHostKeyChecking=no crs79@books-db.colab.duke.edu uptime'
+                    sh  """
+                        echo "SSH and dump db"
+                        ssh -v crs79@books-db.colab.duke.edu <<EOF
+                        pg_dump testdb > /home/crs79/test-db-dump.sql
+                        EOF
+                    """.stripIndent()
+                    sh 'sudo touch /../../var/lib/jenkins/db-dumps/${directory}/test-db-dump-$(date +%F).sql'
+                    sh 'sudo chmod 777 /../../var/lib/jenkins/db-dumps/${directory}/test-db-dump-$(date +%F).sql'
+                    sh 'scp crs79@books-db.colab.duke.edu:/home/crs79/test-db-dump.sql /../../var/lib/jenkins/db-dumps/${directory}/test-db-dump-$(date +%F).sql'
+                    sh 'find /../../var/lib/jenkins/db-dumps/hourly -mtime +1 -type f -delete'
+                    sh 'find /../../var/lib/jenkins/db-dumps/daily -mtime +7 -type f -delete'
+                    sh 'find /../../var/lib/jenkins/db-dumps/weekly -mtime +30 -type f -delete'
+                    sh 'find /../../var/lib/jenkins/db-dumps/monthly -mtime +366 -type f -delete'
+                }
+            }
+        }
+    }
+    post {
+        failure {
+            slackSend(color: "danger", message: "${directory} DB backup failed")
+        }
+        success {
+            slackSend(color: "good", message: "${directory} DB backup succeeded")
+        }
+    }
+}
