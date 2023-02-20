@@ -8,19 +8,19 @@ pipeline {
                     sh  """
                         echo "SSH and dump db"
                         ssh -v crs79@books-db.colab.duke.edu <<EOF
-                        pg_dump testdb > /home/crs79/test-db-dump.sql
+                        pg_dump ${db} > /home/crs79/${db}-dump.sql
                         EOF
                     """.stripIndent()
                     sh 'echo "Creating files and giving permissions"'
                     sh 'sudo mkdir -p /../../var/lib/jenkins/db-dumps/${directory}/$(date +%F)'
                     sh 'sudo mkdir -p /../../var/lib/jenkins/db-dumps/${directory}/$(date +%F)/books'
                     sh 'sudo chmod 777 /../../var/lib/jenkins/db-dumps/${directory}/$(date +%F)/books'
-                    sh 'sudo touch /../../var/lib/jenkins/db-dumps/${directory}/$(date +%F)/test-db-dump-$(date +%F).sql'
-                    sh 'sudo chmod 777 /../../var/lib/jenkins/db-dumps/${directory}/$(date +%F)/test-db-dump-$(date +%F).sql'
+                    sh 'sudo touch /../../var/lib/jenkins/db-dumps/${directory}/$(date +%F)/${db}-dump-$(date +%F).sql'
+                    sh 'sudo chmod 777 /../../var/lib/jenkins/db-dumps/${directory}/$(date +%F)/${db}-dump-$(date +%F).sql'
                     
                     sh 'echo "Copy Files"'
-                    sh 'scp crs79@books-db.colab.duke.edu:/home/crs79/test-db-dump.sql /../../var/lib/jenkins/db-dumps/${directory}/$(date +%F)/test-db-dump-$(date +%F).sql'
-                    sh 'scp -r crs79@books-db.colab.duke.edu:/srv/media/books/* /../../var/lib/jenkins/db-dumps/${directory}/$(date +%F)/books'
+                    sh 'scp crs79@books-db.colab.duke.edu:/home/crs79/${db}-dump.sql /../../var/lib/jenkins/db-dumps/${directory}/$(date +%F)/${db}-dump-$(date +%F).sql'
+                    sh 'scp -r crs79@books-db.colab.duke.edu:/srv/media/books /../../var/lib/jenkins/db-dumps/${directory}/$(date +%F)'
                     
                     sh 'echo "Remove old files"'
                     sh 'find /../../var/lib/jenkins/db-dumps/hourly/* -type d -mtime +1 | xargs rm -rf'
