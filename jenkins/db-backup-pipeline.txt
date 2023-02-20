@@ -11,9 +11,18 @@ pipeline {
                         pg_dump testdb > /home/crs79/test-db-dump.sql
                         EOF
                     """.stripIndent()
-                    sh 'sudo touch /../../var/lib/jenkins/db-dumps/${directory}/test-db-dump-$(date +%F).sql'
-                    sh 'sudo chmod 777 /../../var/lib/jenkins/db-dumps/${directory}/test-db-dump-$(date +%F).sql'
-                    sh 'scp crs79@books-db.colab.duke.edu:/home/crs79/test-db-dump.sql /../../var/lib/jenkins/db-dumps/${directory}/test-db-dump-$(date +%F).sql'
+                    sh 'echo "Creating files and giving permissions"'
+                    sh 'sudo mkdir -p /../../var/lib/jenkins/db-dumps/${directory}/$(date +%F)'
+                    sh 'sudo mkdir -p /../../var/lib/jenkins/db-dumps/${directory}/$(date +%F)/books'
+                    sh 'sudo chmod 777 /../../var/lib/jenkins/db-dumps/${directory}/$(date +%F)/books'
+                    sh 'sudo touch /../../var/lib/jenkins/db-dumps/${directory}/$(date +%F)/test-db-dump-$(date +%F).sql'
+                    sh 'sudo chmod 777 /../../var/lib/jenkins/db-dumps/${directory}/$(date +%F)/test-db-dump-$(date +%F).sql'
+                    
+                    sh 'echo "Copy Files"'
+                    sh 'scp crs79@books-db.colab.duke.edu:/home/crs79/test-db-dump.sql /../../var/lib/jenkins/db-dumps/${directory}/$(date +%F)/test-db-dump-$(date +%F).sql'
+                    sh 'scp -r crs79@books-db.colab.duke.edu:/srv/media/books/* /../../var/lib/jenkins/db-dumps/${directory}/$(date +%F)/books'
+                    
+                    sh 'echo "Remove old files"'
                     sh 'find /../../var/lib/jenkins/db-dumps/hourly -mtime +1 -type f -delete'
                     sh 'find /../../var/lib/jenkins/db-dumps/daily -mtime +7 -type f -delete'
                     sh 'find /../../var/lib/jenkins/db-dumps/weekly -mtime +30 -type f -delete'
