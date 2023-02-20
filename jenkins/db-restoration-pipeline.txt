@@ -1,0 +1,29 @@
+pipeline {
+    agent any
+    stages {
+        stage('Backup database') {
+            steps {
+                sshagent(['books-db-key']) {
+                    sh 'ssh -o StrictHostKeyChecking=no crs79@books-db.colab.duke.edu uptime'
+                    sh 'scp /../../var/lib/jenkins/db-dumps/${dir}/${date}/testdb-dump-${date}.sql crs79@books-db.colab.duke.edu:/home/crs79/db-restore.sql'
+                    sh 'scp -r /../../var/lib/jenkins/db-dumps/${dir}/${date}/books crs79@books-db.colab.duke.edu:/home/crs79 '
+                    sh  """
+                        echo "SSH and restore DB"
+                        ssh -v crs79@books-db.colab.duke.edu <<EOF
+                        createdb testdb2
+                        psql testdb2 < /home/crs79/db-restore.sql
+                        EOF
+                    """.stripIndent()
+                }
+            }
+        }
+    }
+    post {
+        failure {
+            slackSend(color: "danger", message: "${db} not successfully restored to the ${date} backup from the ${dir} directory")
+        }
+        success {
+            slackSend(color: "good", message: "${db} successfully restored to the ${date} backup from the ${dir} directory")
+        }
+    }
+}
