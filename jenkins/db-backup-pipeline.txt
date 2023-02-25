@@ -1,0 +1,42 @@
+pipeline {
+    agent any
+    stages {
+        stage('Backup database') {
+            steps {
+                sshagent(['books-db-key']) {
+                    sh 'ssh -o StrictHostKeyChecking=no crs79@books-db.colab.duke.edu uptime'
+                    sh  """
+                        echo "SSH and dump db"
+                        ssh -v crs79@books-db.colab.duke.edu <<EOF
+                        pg_dump ${db} > /home/crs79/${db}-dump.sql
+                        EOF
+                    """.stripIndent()
+                    sh 'echo "Creating files and giving permissions"'
+                    sh 'sudo mkdir -p /../../var/lib/jenkins/db-dumps/${directory}/$(date +%F)'
+                    sh 'sudo mkdir -p /../../var/lib/jenkins/db-dumps/${directory}/$(date +%F)/books'
+                    sh 'sudo chmod 777 /../../var/lib/jenkins/db-dumps/${directory}/$(date +%F)/books'
+                    sh 'sudo touch /../../var/lib/jenkins/db-dumps/${directory}/$(date +%F)/${db}-dump-$(date +%F).sql'
+                    sh 'sudo chmod 777 /../../var/lib/jenkins/db-dumps/${directory}/$(date +%F)/${db}-dump-$(date +%F).sql'
+                    
+                    sh 'echo "Copy Files"'
+                    sh 'scp crs79@books-db.colab.duke.edu:/home/crs79/${db}-dump.sql /../../var/lib/jenkins/db-dumps/${directory}/$(date +%F)/${db}-dump-$(date +%F).sql'
+                    sh 'scp -r crs79@books-db.colab.duke.edu:/srv/media/books /../../var/lib/jenkins/db-dumps/${directory}/$(date +%F)'
+                    
+                    sh 'echo "Remove old files"'
+                    sh 'find /../../var/lib/jenkins/db-dumps/hourly/* -type d -mtime +1 | xargs sudo rm -rf'
+                    sh 'find /../../var/lib/jenkins/db-dumps/daily/* -type d -mtime +7 | xargs sudo rm -rf'
+                    sh 'find /../../var/lib/jenkins/db-dumps/weekly/* -type d -mtime +30 | xargs sudo rm -rf'
+                    sh 'find /../../var/lib/jenkins/db-dumps/monthly/* -type d -mtime +366 | xargs sudo rm -rf'
+                }
+            }
+        }
+    }
+    post {
+        failure {
+            slackSend(color: "danger", message: "${directory} DB backup failed")
+        }
+        success {
+            slackSend(color: "good", message: "${directory} DB backup succeeded")
+        }
+    }
+}
