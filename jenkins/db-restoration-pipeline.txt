@@ -4,14 +4,15 @@ pipeline {
         stage('Backup database') {
             steps {
                 sshagent(['books-db-key']) {
-                    sh 'ssh -o StrictHostKeyChecking=no crs79@books-db.colab.duke.edu uptime'
-                    sh 'scp /../../var/lib/jenkins/db-dumps/${dir}/${date}/testdb-dump-${date}.sql crs79@books-db.colab.duke.edu:/home/crs79/db-restore.sql'
-                    sh 'scp -r /../../var/lib/jenkins/db-dumps/${dir}/${date}/books crs79@books-db.colab.duke.edu:/home/crs79 '
+                    sh 'ssh -o StrictHostKeyChecking=no root@books-db.colab.duke.edu uptime'
+                    sh 'scp /../../var/lib/jenkins/db-dumps/${dir}/${date}/${db}-dump-${date}.sql root@books-db.colab.duke.edu:/home/crs79/db-restore.sql'
+                    sh 'scp -r /../../var/lib/jenkins/db-dumps/${dir}/${date}/books root@books-db.colab.duke.edu:/srv/media '
                     sh  """
                         echo "SSH and restore DB"
-                        ssh -v crs79@books-db.colab.duke.edu <<EOF
-                        createdb testdb2
-                        psql testdb2 < /home/crs79/db-restore.sql
+                        ssh -v root@books-db.colab.duke.edu <<EOF
+                        dropdb ${db}
+                        createdb ${db}
+                        psql ${db} < /home/crs79/db-restore.sql
                         EOF
                     """.stripIndent()
                 }
