@@ -3,6 +3,9 @@ nginx-https/certbot
 nginx-https/nginx/conf/default.conf
 nginx-https/nginx/setup_conf/default.conf
 
+# Prefab data related
+api/images/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

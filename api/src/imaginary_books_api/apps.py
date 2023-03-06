@@ -1,4 +1,4 @@
-import requests
+import requests, os
 import json
 from dotenv import dotenv_values
 from pathlib import Path
@@ -38,11 +38,37 @@ class Postman:
         data,
     ):
         url = self.create_url(method)
-        headers = self.create_headers(method)
-        payload = json.dumps(data)
-        response = requests.request("POST", url, headers=headers, data=payload)
+        payload, image = self.create_payload(method, data)
+        files = self.create_files(method, data, image)
+        headers = self.create_headers(method, image)
+        response = requests.request("POST", url, headers=headers, data=payload, files=files)
 
         return json.loads(response.text)
+    
+    def create_files(
+        self,
+        method: str,
+        data,
+        image,
+    ):
+        download_abs_path = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '../..', 'images'))
+        if (method == 'book_add') and (image != ''):
+            image_file = [('image', (image, open(f"{download_abs_path}/{image}", "rb")))]
+            return image_file
+        return ''
+    
+    def create_payload(
+        self,
+        method: str,
+        data: dict,
+    ):
+        image = ''
+        if(method == 'book_add'):
+            if 'image' in data:
+                image = data.pop('image')
+                return data, image
+
+        return json.dumps(data), image
 
     def create_url(
         self,
@@ -53,9 +79,12 @@ class Postman:
     def create_headers(
         self,
         method: str,
+        image: str
     ):
         headers = {}
-        headers['Content-Type'] = self.METHOD_TO_ENDPOINT.get(method)[1]
+        if(self.METHOD_TO_ENDPOINT.get(method)[1] != ''):
+            if image == '':
+                headers['Content-Type'] = self.METHOD_TO_ENDPOINT.get(method)[1]
         if(self.METHOD_TO_ENDPOINT.get(method)[2]):
             headers['Authorization'] = f'Bearer {self.get_access_token()}'
         
