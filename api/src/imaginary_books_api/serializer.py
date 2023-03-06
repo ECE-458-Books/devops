@@ -44,7 +44,8 @@ def book_add(datalist):
             elif key=='ISBN-13':
                 d['isbn_13'] = assoc_data.strip()
             elif key=='height' or key=='width' or key=='thickness':
-                d[key] = centiToInches(assoc_data.strip())
+                if assoc_data.strip() != '':
+                    d[key] = centiToInches(assoc_data.strip())
             elif key=='cover':
                 if assoc_data=='':
                     d['setDefaultImage'] = 'true'
