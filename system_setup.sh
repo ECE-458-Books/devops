@@ -57,6 +57,7 @@ Django(){
 
     echo "Create Static Media Server for Books"
     sudo mkdir /srv/media/books
+    sudo cp $BASEDIR/data/default.jpeg /srv/media/books
 }
 
 Jenkins(){
