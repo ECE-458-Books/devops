@@ -55,8 +55,8 @@ Django(){
     docker compose up -d webserver_deployment
     docker compose up -d certbot_deployment
 
-    echo "Create Static Media Server for Books"
-    sudo mkdir /srv/media/books
+    echo "Created Static Media Directory for Books"
+    sudo mkdir -p /srv/media/books
     sudo cp $BASEDIR/data/default.jpeg /srv/media/books
 }
 
