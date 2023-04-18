@@ -24,7 +24,7 @@ class Postman:
 
     def login(self):
         login_data = {
-            "email" : self._env['USERNAME'],
+            "username" : self._env['USERNAME'],
             "password" : self._env['PASSWORD']
         }
         response = self.post('login', login_data)
@@ -41,7 +41,8 @@ class Postman:
         payload, image = self.create_payload(method, data)
         files = self.create_files(method, data, image)
         headers = self.create_headers(method, image)
-        response = requests.request("POST", url, headers=headers, data=payload, files=files)
+        # response = requests.request("POST", url, headers=headers, data=payload, files=files)
+        response = requests.request("POST", url, headers=headers, data=payload)
 
         return json.loads(response.text)
     

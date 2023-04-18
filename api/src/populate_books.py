@@ -16,13 +16,12 @@ def import_csvfile(csvfile):
     return l
 
 if __name__ == "__main__":
-    csvfile = 'Ev2_Prefab_Data_Books.csv'
+    csvfile = 'Ev4_Prefab_Data_Books.csv'
 
     datalist = import_csvfile(csvfile)
 
     postman = Postman()
     data = serializer._format(method='book_add', data=datalist)
-    pprint(data)
     for book in data:
         response = postman.post(method='book_add', data=book)
         print(response)

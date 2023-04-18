@@ -50,18 +50,18 @@ def book_add(datalist):
                 if assoc_data=='':
                     d['setDefaultImage'] = 'true'
                 else:
-                    if (image_filename := urlToFile(assoc_data, data[keys.index('ISBN-13')])) is not None:
-                        d['image'] = image_filename
-                        d['authors'] = ','.join(d['authors'])
-                        d['genres'] = ','.join(d['genres'])
-                    else:
-                        d['setDefaultImage'] = 'true'
+                    assoc_data = http_to_https(assoc_data)
+                    d['image_url'] = assoc_data
             else:
                 d[key] = assoc_data.strip()
         ret.append(d)
     
     return ret
 
+def http_to_https(http):
+    da = http.split(':')
+    da[0] = "https"
+    return ":".join(da)
 
 def find_pattern(pattern, path):
     result = []
@@ -81,6 +81,9 @@ def check_if_image_exists(
     download_abs_path = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '../..', 'images'))
     regex=f'{filename}.*'
     filepath = find_pattern(regex, download_abs_path)
+    if len(filepath) == 0:
+        return None
+    
     return filepath[0].get('filename', None)
 
 def urlToFile(
